@@ -11,7 +11,10 @@
 
 #include <string.h>
 #include <vector>
+
+#ifndef __ANDROID__
 #include <libconfig.h++>
+#endif
 
 #include <ndnrtc/simple-log.hpp>
 #include <ndnrtc/params.hpp>
@@ -263,6 +266,9 @@ class ClientParams : public ndnrtc::Params
     ConsumerClientParams consumedStreamsParams_;
 };
 
+#ifndef __ANDROID__
 int loadParamsFromFile(const std::string &cfgFileName, ClientParams &params,
                        const std::string &identity);
+#endif
+
 #endif
