@@ -72,6 +72,9 @@ void ProducerStreamParams::getMaxResolution(unsigned int &width,
 }
 
 //******************************************************************************
+
+#ifndef __ANDROID__
+
 int loadParamsFromFile(const string &cfgFileName, ClientParams &params,
                        const std::string &identity)
 {
@@ -111,6 +114,8 @@ int loadParamsFromFile(const string &cfgFileName, ClientParams &params,
 
     return 0;
 }
+
+#endif
 
 int loadConsumerSettings(const Setting &root, ConsumerClientParams &params)
 {
