@@ -1,5 +1,5 @@
 //
-// main.cpp
+// ndnrtc-client-helpers.cpp
 //
 //  Created by Peter Gusev on 03 March 2016.
 //  Copyright 2013-2016 Regents of the University of California
@@ -31,107 +31,6 @@ using namespace std;
 using namespace ndnrtc;
 using namespace ndn;
 
-struct Args
-{
-    unsigned int runTimeSec_, samplePeriod_;
-    std::string configFile_, identity_, instance_, policy_;
-    ndnlog::NdnLoggerDetailLevel logLevel_;
-};
-
-int run(const struct Args &);
-void registerPrefix(std::shared_ptr<Face> &, const KeyChainManager &);
-void publishCertificate(std::shared_ptr<Face> &, KeyChainManager &);
-
-void handler(int sig)
-{
-    void *array[10];
-    size_t size;
-
-    fprintf(stderr, "Error: signal %d:\n", sig);
-#ifndef __ANDROID__
-    // get void*'s for all entries on the stack
-    size = backtrace(array, 10);
-
-    // print out all the frames to stderr
-    backtrace_symbols_fd(array, size, STDERR_FILENO);
-#endif
-    exit(1);
-}
-
-//******************************************************************************
-int main(int argc, char **argv)
-{
-    signal(SIGABRT, handler);
-    signal(SIGSEGV, handler);
-
-    char *configFile = NULL, *identity = NULL, *instance = NULL, *policy = NULL;
-    int c;
-    unsigned int runTimeSec = 0;           // default app run time (sec)
-    unsigned int statSamplePeriodMs = 100; // default statistics sample interval (ms)
-    ndnlog::NdnLoggerDetailLevel logLevel = ndnlog::NdnLoggerDetailLevelDefault;
-
-    opterr = 0;
-    while ((c = getopt(argc, argv, "vn:i:t:c:s:p:")) != -1)
-        switch (c)
-        {
-        case 'c':
-            configFile = optarg;
-            break;
-        case 's':
-            identity = optarg;
-            break;
-        case 'i':
-            instance = optarg;
-            break;
-        case 'v':
-            logLevel = ndnlog::NdnLoggerDetailLevelAll;
-            break;
-        case 'n':
-            statSamplePeriodMs = (unsigned int)atoi(optarg);
-            break;
-        case 't':
-            runTimeSec = (unsigned int)atoi(optarg);
-            break;
-        case 'p':
-            policy = optarg;
-            break;
-        case '?':
-            if (optopt == 'c')
-                fprintf(stderr, "Option -%c requires an argument.\n", optopt);
-            else if (isprint(optopt))
-                fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-            else
-                fprintf(stderr,
-                        "Unknown option character `\\x%x'.\n",
-                        optopt);
-            return 1;
-        default:
-            abort();
-        }
-
-    if (!configFile || runTimeSec == 0 || identity == NULL || policy == NULL)
-    {
-        std::cout << "usage: " << argv[0] << " -c <config file> -s <signing identity> "
-                                             "-p <verification policy file> "
-                                             "-t <app run time in seconds> [-n <statistics sample interval in milliseconds> "
-                                             "-i <instance name> -v <verbose mode>]"
-                  << std::endl;
-        exit(1);
-    }
-
-    Args args;
-    args.runTimeSec_ = runTimeSec;
-    args.logLevel_ = logLevel;
-    args.samplePeriod_ = statSamplePeriodMs;
-    args.configFile_ = std::string(configFile);
-    args.identity_ = std::string(identity);
-    args.policy_ = std::string(policy);
-    args.instance_ = (instance ? std::string(instance) : "client0");
-
-    return run(args);
-}
-
-//******************************************************************************
 int run(const struct Args &args)
 {
     int err = 0;
